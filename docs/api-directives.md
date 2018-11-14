@@ -653,6 +653,25 @@ type Query {
 }
 ```
 
+You can also supply the optional `defaultCount` attribute to set a default count for the paginator. This works with both the classic paginator and the relay/connection type paginators.
+
+```graphql
+type Query {
+  posts: [Post!]! @paginate(type: "connection", defaultCount: 25)
+}
+```
+
+When doing so, you can omit the `count` argument when querying:
+
+```graphql
+query {
+  posts {
+    id
+    name
+  }
+}
+```
+
 By default, this looks for an Eloquent model in the configured default namespace, with the same
 name as the returned type. You can overwrite this by setting the `model` argument.
 
