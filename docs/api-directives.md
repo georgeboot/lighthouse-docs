@@ -400,6 +400,25 @@ type User {
 }
 ```
 
+Just like you can do with `@paginator`, you can also supply the optional `defaultCount` attribute to set a default count for the paginator. This works with both the classic paginator and the relay/connection type paginators.
+
+```graphql
+type Query {
+  posts: [Post!]! @hasMany(relation: "articles", defaultCount: 25)
+}
+```
+
+When doing so, you can omit the `count` argument when querying:
+
+```graphql
+query {
+  posts {
+    id
+    name
+  }
+}
+```
+
 ## @hasOne
 
 Corresponds to [Eloquent's HasOne-Relationship](https://laravel.com/docs/eloquent-relationships#one-to-one).
