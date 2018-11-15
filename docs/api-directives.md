@@ -382,15 +382,6 @@ type User {
 }
 ```
 
-You can return the related models paginated by setting the `type`.
-
-```graphql
-type User {
-  postsPaginated: [Post!]! @hasMany(type: "paginator")
-  postsRelayConnection: [Post!]! @hasMany(type: "connection")
-}
-```
-
 If the name of the relationship on the Eloquent model is different than the field name,
 you can override it by setting `relation`.
 
@@ -400,24 +391,16 @@ type User {
 }
 ```
 
-Just like you can do with `@paginator`, you can also supply the optional `defaultCount` attribute to set a default count for the paginator. This works with both the classic paginator and the relay/connection type paginators.
+You can return the related models paginated by setting the `type`.
 
 ```graphql
-type Query {
-  posts: [Post!]! @hasMany(relation: "articles", defaultCount: 25)
+type User {
+  postsPaginated: [Post!]! @hasMany(type: "paginator")
+  postsRelayConnection: [Post!]! @hasMany(type: "connection")
 }
 ```
 
-When doing so, you can omit the `count` argument when querying:
-
-```graphql
-query {
-  posts {
-    id
-    name
-  }
-}
-```
+Pagination for related models works just like for root fields, find out more about this in [`@paginate`](directives#paginate).
 
 ## @hasOne
 
@@ -654,12 +637,41 @@ type Query {
 
 ## @paginate
 
-Return a paginated list. This transforms the schema definition and automatically adds
-additional arguments and inbetween types.
+Transform a field so it returns a paginated list.
 
 ```graphql
 type Query {
   posts: [Post!]! @paginate
+}
+```
+
+The schema definition is automatically transformed to this:
+
+```graphql
+type Query {
+  posts(count: Int!, page: Int): PostPaginator
+}
+
+type PostPaginator {
+  data: [Post!]!
+  paginatorInfo: PaginatorInfo!
+}
+```
+
+And can be queried like this:
+
+```graphql
+{
+  posts(count: 10) {
+    data {
+      id
+      title
+    }
+    paginatorInfo {
+      currentPage
+      lastPage
+    }
+  }
 }
 ```
 
@@ -672,7 +684,7 @@ type Query {
 }
 ```
 
-You can also supply the optional `defaultCount` attribute to set a default count for the paginator. This works with both the classic paginator and the relay/connection type paginators.
+You can supply a `defaultCount` to set a default count for any kind of paginator.
 
 ```graphql
 type Query {
@@ -680,7 +692,7 @@ type Query {
 }
 ```
 
-When doing so, you can omit the `count` argument when querying:
+This let's you omit the `count` argument when querying:
 
 ```graphql
 query {
@@ -691,7 +703,7 @@ query {
 }
 ```
 
-By default, this looks for an Eloquent model in the configured default namespace, with the same
+By default, Lighthouse looks for an Eloquent model in the configured default namespace, with the same
 name as the returned type. You can overwrite this by setting the `model` argument.
 
 ```graphql
@@ -701,7 +713,6 @@ type Query {
 ```
 
 If simply querying Eloquent does not fit your use-case, you can specify a custom `builder`.
-
 
 ```graphql
 type Query {
